@@ -3,8 +3,13 @@ Ext.define('CustomApp', {
     componentCls: 'app',
 
     launch: function() {
-
-         var TIME_PERIOD_IN_MONTHS = 1,
+        this.showChart();
+    },
+    
+    showChart : function(features) {
+        console.log("features",features);
+        
+        var TIME_PERIOD_IN_MONTHS = 1,
              TIME_PERIOD_IN_MILLIS = 1000 * 60 * 60 * 24 * 30 * TIME_PERIOD_IN_MONTHS;
         
         // calculate time period
@@ -45,12 +50,11 @@ Ext.define('CustomApp', {
             ],
             autoLoad : true,
             limit: Infinity,
-            fetch: ['ObjectID','Name', '_TypeHierarchy','Blocked','ScheduleState'],
+            fetch: ['ObjectID','Name', '_TypeHierarchy','_ItemHierarchy','Blocked','ScheduleState','Feature','Parent'],
             hydrate: ['_TypeHierarchy','ScheduleState']
 		};
 
         this.chartConfig.storeConfig = storeConfig;
-
         this.add(this.chartConfig);
     },
     

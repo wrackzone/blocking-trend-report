@@ -5,7 +5,9 @@
    "sdk": "2.0rc1",
    "javascript": [
       "App.js",
-      "calculator.js"
+      "calculator.js",
+      "picker.js"
+      
    ],
    "css": [
       "app.css"
