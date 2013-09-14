@@ -46,7 +46,7 @@ Ext.define('CustomApp', {
     chartConfig: {
         xtype: 'rallychart',
         itemId : 'myChart',
-        chartColors: ['Gray', 'Orange', 'Green', 'Blue','Green','LightGray'],
+        chartColors: ['Green', 'Red', 'Green', 'Blue','Green','LightGray'],
         
         storeConfig: { },
         calculatorType: 'MyTestCaseCalculator',
