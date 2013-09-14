@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>blockingtrendreport</title>
+
+    <script type="text/javascript" src="/apps/2.0rc1/sdk.js"></script>
+
+    <script type="text/javascript">
+        Rally.onReady(function () {
+                
+ var TIME_PERIOD_IN_MONTHS = 2,
+     TIME_PERIOD_IN_MILLIS = 1000 * 60 * 60 * 24 * 30 * TIME_PERIOD_IN_MONTHS;
+
+Ext.define('CustomApp', {
+    extend: 'Rally.app.App',
+    componentCls: 'app',
+
+    launch: function() {
+        
+        // calculate time period
+        var today = new Date(),
+            timePeriod = new Date(today - TIME_PERIOD_IN_MILLIS);
+
+        this.chartConfig.calculatorConfig.startDate = timePeriod;
+        this.chartConfig.calculatorConfig.endDate = today;
+
+        // get the current project
+        var p = this.getContext().getProject().ObjectID;
+
+        var storeConfig = {
+
+            filters: [
+                {
+                    property: '_ProjectHierarchy',
+                    operator : 'in',
+                    value : [p] // 5970178727
+                },
+                {
+                    property: '_TypeHierarchy',
+                    operator: 'in',
+                    value: ['HierarchicalRequirement']
+                }
+            ],
+            autoLoad : true,
+            limit: Infinity,
+            fetch: ['ObjectID','Name', '_TypeHierarchy','Blocked','ScheduleState'],
+            hydrate: ['_TypeHierarchy']
+		};
+
+        this.chartConfig.storeConfig = storeConfig;
+
+        this.add(this.chartConfig);
+    },
+    
+    chartConfig: {
+        xtype: 'rallychart',
+        itemId : 'myChart',
+        chartColors: ['Gray', 'Orange', 'Green', 'Blue','Green','LightGray'],
+        
+        storeConfig: { },
+        calculatorType: 'MyTestCaseCalculator',
+        
+        calculatorConfig: {
+        },
+
+        chartConfig: {
+            plotOptions: {
+                column: { stacking: 'normal'}
+            },
+            chart: { },
+            title: { text: 'Blocking History' },
+            xAxis: {
+                tickInterval: 3,
+                labels: {
+                    formatter: function() {
+                        var d = new Date(this.value);
+                        return ""+(d.getMonth()+1)+"/"+d.getDate();
+                    }
+                },
+                title: {
+                    text: 'Date'
+                }
+            },
+            yAxis: [
+                {
+                    title: {
+                        text: 'Count'
+                    }
+                }
+            ]
+        }
+    }
+});
+
+                
+Ext.define("MyTestCaseCalculator", {
+   extend: "Rally.data.lookback.calculator.TimeSeriesCalculator",
+   
+    getMetrics: function () {
+        var metrics = [
+           {
+                field: "Blocked",
+                as: "Not Blocked",
+                display: "column",
+                f: "filteredCount",
+                filterField: "Blocked",
+                filterValues: [false]
+           },
+            {
+                field: "Blocked",
+                as: "Blocked",
+                display: "column",
+                f: "filteredCount",
+                filterField: "Blocked",
+                filterValues: [true]
+            }
+        ];
+        return metrics;
+    },
+    getDerivedFieldsOnInput : function () { 
+        return [ 
+            // {
+            //     as: 'NotBlocked', 
+            //     f:  function(row) {
+            //         return  row.Blocked == false ? 1 : 0;
+            //     }
+            // }
+        ];
+    },
+    getDerivedFieldsAfterSummary : function () {
+        return [
+        //     {as: 'Projection', 
+        //     f: function (row, index, summaryMetrics, seriesData) {
+        //         if (index == 0) {
+        //             //console.log(seriesData);
+        //             datesData = _.pluck(seriesData,"label");
+        //             acceptedData = _.pluck(seriesData,"Accepted Points");
+        //             console.log("accepted date len",acceptedData.length);
+        //             var today = new Date();
+        //             acceptedData = _.filter(acceptedData, function(d,i){ return new Date(Date.parse(datesData[i])) < today;   });
+        //             //console.log(acceptedData);
+        //         }
+        //         var y = linearProject( acceptedData, index);
+        //         return Math.round(y * 100) / 100;
+        //     }
+        //   } 
+        ];
+    }
+
+});
+
+            Rally.launchApp('CustomApp', {
+                name:"blockingtrendreport",
+	            parentRepos:""
+            });
+
+        });
+    </script>
+
+
+    <style type="text/css">
+        .app {
+     /* Add app styles here */
+}
+
+    </style>
+</head>
+<body></body>
+</html>

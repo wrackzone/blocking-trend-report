@@ -1,4 +1,9 @@
-blocking-trend-report
-=====================
+blockingtrendreport
+=========================
 
-A trend of blocked items
+## Overview
+
+
+## License
+
+AppTemplate is released under the MIT license.  See the file [LICENSE](https://raw.github.com/RallyApps/AppTemplate/master/LICENSE) for the full text.
