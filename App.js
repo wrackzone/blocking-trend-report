@@ -1,12 +1,11 @@
-
- var TIME_PERIOD_IN_MONTHS = 2,
-     TIME_PERIOD_IN_MILLIS = 1000 * 60 * 60 * 24 * 30 * TIME_PERIOD_IN_MONTHS;
-
 Ext.define('CustomApp', {
     extend: 'Rally.app.App',
     componentCls: 'app',
 
     launch: function() {
+
+         var TIME_PERIOD_IN_MONTHS = 1,
+             TIME_PERIOD_IN_MILLIS = 1000 * 60 * 60 * 24 * 30 * TIME_PERIOD_IN_MONTHS;
         
         // calculate time period
         var today = new Date(),
@@ -17,8 +16,15 @@ Ext.define('CustomApp', {
 
         // get the current project
         var p = this.getContext().getProject().ObjectID;
+        console.log("p",p);
 
         var storeConfig = {
+            
+            // listeners : { 
+            //     load : function(store,data) {
+            //         console.log("data",data.length);
+            //     }
+            // },
 
             filters: [
                 {
@@ -30,12 +36,17 @@ Ext.define('CustomApp', {
                     property: '_TypeHierarchy',
                     operator: 'in',
                     value: ['HierarchicalRequirement']
+                },
+                {
+                    property: '_ValidFrom',
+                    operator: '>',
+                    value: timePeriod.toISOString()
                 }
             ],
             autoLoad : true,
             limit: Infinity,
             fetch: ['ObjectID','Name', '_TypeHierarchy','Blocked','ScheduleState'],
-            hydrate: ['_TypeHierarchy']
+            hydrate: ['_TypeHierarchy','ScheduleState']
 		};
 
         this.chartConfig.storeConfig = storeConfig;
@@ -46,7 +57,7 @@ Ext.define('CustomApp', {
     chartConfig: {
         xtype: 'rallychart',
         itemId : 'myChart',
-        chartColors: ['Green', 'Red', 'Green', 'Blue','Green','LightGray'],
+        chartColors: ['Green', 'Red'],
         
         storeConfig: { },
         calculatorType: 'MyTestCaseCalculator',
@@ -61,7 +72,7 @@ Ext.define('CustomApp', {
             chart: { },
             title: { text: 'Blocking History' },
             xAxis: {
-                tickInterval: 3,
+                tickInterval: 1,
                 labels: {
                     formatter: function() {
                         var d = new Date(this.value);
