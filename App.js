@@ -3,12 +3,6 @@ Ext.define('CustomApp', {
     componentCls: 'app',
 
     launch: function() {
-        this.showChart();
-    },
-    
-    showChart : function(features) {
-        console.log("features",features);
-        
         var TIME_PERIOD_IN_MONTHS = 1,
              TIME_PERIOD_IN_MILLIS = 1000 * 60 * 60 * 24 * 30 * TIME_PERIOD_IN_MONTHS;
         
@@ -16,26 +10,41 @@ Ext.define('CustomApp', {
         var today = new Date(),
             timePeriod = new Date(today - TIME_PERIOD_IN_MILLIS);
 
+        // get the current project
+        var project = this.getContext().getProject().ObjectID;
+        console.log("project",project);
+        
+        var storeConfig = this.createStoreConfig(project,timePeriod);
+        
+        //Ext.create("Rally.data.lookback.SnapshotStore",storeConfig);
         this.chartConfig.calculatorConfig.startDate = timePeriod;
         this.chartConfig.calculatorConfig.endDate = today;
 
-        // get the current project
-        var p = this.getContext().getProject().ObjectID;
-        console.log("p",p);
 
-        var storeConfig = {
+        // store config goes here
+
+        this.chartConfig.storeConfig = storeConfig;
+        this.add(this.chartConfig);
+    
+        
+    },
+    
+    createStoreConfig : function(project, validFrom ) {
+
+        // store config goes here
+        return {
             
-            // listeners : { 
-            //     load : function(store,data) {
-            //         console.log("data",data.length);
-            //     }
-            // },
+            listeners : { 
+                load : function(store,data) {
+                    console.log("data",data.length);
+                }
+            },
 
             filters: [
                 {
                     property: '_ProjectHierarchy',
                     operator : 'in',
-                    value : [p] // 5970178727
+                    value : [project] // 5970178727
                 },
                 {
                     property: '_TypeHierarchy',
@@ -45,19 +54,16 @@ Ext.define('CustomApp', {
                 {
                     property: '_ValidFrom',
                     operator: '>',
-                    value: timePeriod.toISOString()
+                    value: validFrom
                 }
             ],
             autoLoad : true,
             limit: Infinity,
             fetch: ['ObjectID','Name', '_TypeHierarchy','_ItemHierarchy','Blocked','ScheduleState','Feature','Parent'],
             hydrate: ['_TypeHierarchy','ScheduleState']
-		};
+        };
 
-        this.chartConfig.storeConfig = storeConfig;
-        this.add(this.chartConfig);
     },
-    
     chartConfig: {
         xtype: 'rallychart',
         itemId : 'myChart',
@@ -95,5 +101,5 @@ Ext.define('CustomApp', {
                 }
             ]
         }
-    }
+    }    
 });
