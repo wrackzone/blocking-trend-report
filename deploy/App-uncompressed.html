@@ -7,40 +7,53 @@
 
     <script type="text/javascript">
         Rally.onReady(function () {
-                
- var TIME_PERIOD_IN_MONTHS = 1,
-     TIME_PERIOD_IN_MILLIS = 1000 * 60 * 60 * 24 * 30 * TIME_PERIOD_IN_MONTHS;
-
-Ext.define('CustomApp', {
+                Ext.define('CustomApp', {
     extend: 'Rally.app.App',
     componentCls: 'app',
 
     launch: function() {
+        var TIME_PERIOD_IN_MONTHS = 1,
+             TIME_PERIOD_IN_MILLIS = 1000 * 60 * 60 * 24 * 30 * TIME_PERIOD_IN_MONTHS;
         
         // calculate time period
         var today = new Date(),
             timePeriod = new Date(today - TIME_PERIOD_IN_MILLIS);
 
+        // get the current project
+        var project = this.getContext().getProject().ObjectID;
+        console.log("project",project);
+        
+        var storeConfig = this.createStoreConfig(project,timePeriod);
+        
+        //Ext.create("Rally.data.lookback.SnapshotStore",storeConfig);
         this.chartConfig.calculatorConfig.startDate = timePeriod;
         this.chartConfig.calculatorConfig.endDate = today;
 
-        // get the current project
-        var p = this.getContext().getProject().ObjectID;
-        console.log("p",p);
 
-        var storeConfig = {
+        // store config goes here
+
+        this.chartConfig.storeConfig = storeConfig;
+        this.add(this.chartConfig);
+    
+        
+    },
+    
+    createStoreConfig : function(project, validFrom ) {
+
+        // store config goes here
+        return {
             
-            // listeners : { 
-            //     load : function(store,data) {
-            //         console.log("data",data.length);
-            //     }
-            // },
+            listeners : { 
+                load : function(store,data) {
+                    console.log("data",data.length);
+                }
+            },
 
             filters: [
                 {
                     property: '_ProjectHierarchy',
                     operator : 'in',
-                    value : [p] // 5970178727
+                    value : [project] // 5970178727
                 },
                 {
                     property: '_TypeHierarchy',
@@ -50,24 +63,20 @@ Ext.define('CustomApp', {
                 {
                     property: '_ValidFrom',
                     operator: '>',
-                    value: timePeriod.toISOString()
+                    value: validFrom
                 }
             ],
             autoLoad : true,
             limit: Infinity,
-            fetch: ['ObjectID','Name', '_TypeHierarchy','Blocked','ScheduleState'],
+            fetch: ['ObjectID','Name', '_TypeHierarchy','_ItemHierarchy','Blocked','ScheduleState','Feature','Parent'],
             hydrate: ['_TypeHierarchy','ScheduleState']
-		};
+        };
 
-        this.chartConfig.storeConfig = storeConfig;
-
-        this.add(this.chartConfig);
     },
-    
     chartConfig: {
         xtype: 'rallychart',
         itemId : 'myChart',
-        chartColors: ['Green', 'Red', 'Green', 'Blue','Green','LightGray'],
+        chartColors: ['Green', 'Red'],
         
         storeConfig: { },
         calculatorType: 'MyTestCaseCalculator',
@@ -101,7 +110,7 @@ Ext.define('CustomApp', {
                 }
             ]
         }
-    }
+    }    
 });
 
                 
@@ -111,7 +120,6 @@ Ext.define("MyTestCaseCalculator", {
     getMetrics: function () {
         var metrics = [
            {
-                field: "Blocked",
                 as: "Not Blocked",
                 display: "column",
                 f: "filteredCount",
@@ -119,51 +127,21 @@ Ext.define("MyTestCaseCalculator", {
                 filterValues: [false]
            },
             {
-                field: "Blocked",
                 as: "Blocked",
                 display: "column",
                 f: "filteredCount",
                 filterField: "Blocked",
                 filterValues: [true]
-            },
-            {
-                field: "ScheduleState",
-                as: "Accepted",
-                display: "line",
-                f: "filteredCount",
-                filterField: "ScheduleState",
-                filterValues: ["Accepted"]
             }
         ];
         return metrics;
     },
     getDerivedFieldsOnInput : function () { 
         return [ 
-            // {
-            //     as: 'NotBlocked', 
-            //     f:  function(row) {
-            //         return  row.Blocked == false ? 1 : 0;
-            //     }
-            // }
         ];
     },
     getDerivedFieldsAfterSummary : function () {
         return [
-        //     {as: 'Projection', 
-        //     f: function (row, index, summaryMetrics, seriesData) {
-        //         if (index == 0) {
-        //             //console.log(seriesData);
-        //             datesData = _.pluck(seriesData,"label");
-        //             acceptedData = _.pluck(seriesData,"Accepted Points");
-        //             console.log("accepted date len",acceptedData.length);
-        //             var today = new Date();
-        //             acceptedData = _.filter(acceptedData, function(d,i){ return new Date(Date.parse(datesData[i])) < today;   });
-        //             //console.log(acceptedData);
-        //         }
-        //         var y = linearProject( acceptedData, index);
-        //         return Math.round(y * 100) / 100;
-        //     }
-        //   } 
         ];
     }
 
@@ -178,12 +156,14 @@ Ext.define("MyTestCaseCalculator", {
     </script>
 
 
+
     <style type="text/css">
         .app {
-     /* Add app styles here */
+  /* Add app styles here */
 }
 
     </style>
 </head>
-<body></body>
+<body>
+</body>
 </html>
